@@ -1,8 +1,8 @@
 package main
 
 import (
-	    "fmt"
-		"encoding/xml"
+	"fmt"
+	"encoding/xml"
         "unsafe"
 )
 
