@@ -67,13 +67,18 @@ struct {
 ```
 
 This takes advantage of the memory alignment of similar types and ensures no extra memory is wasted.
-Notice how we go from 152 bytes down to 128 bytes by doing this optimization
+Notice how we go from 152 bytes down to 128 bytes by doing this optimization. In addition we can make the Route-Table fields into a pointer.
+We do not see an improvement in the initial size of the struct since both will be 128 bytes but the memory footprint should differ when we load the struct with data.
+The RpcReplyWithTablePointer should be the one which is optimized the most to hold the minimum footprint.
+
 ```
-================================================================================
-Total Memory Usage StructType: RpcReply main.RpcReply => [152]
-================================================================================
-Total Memory Usage StructType: RpcReplyOptimized main.RpcReplyOptimized => [128]
-================================================================================
+=====================================================================================
+Total Memory Usage StructType: RpcReply Originalmain.RpcReply => [152]
+=====================================================================================
+Total Memory Usage StructType: RpcReplyWithCliPointer main.RpcReplyWithCliPointer => [128]
+=====================================================================================
+Total Memory Usage StructType: RpcReplyWithTablePointer main.RpcReplyWithTablePointer => [128]
+=====================================================================================
 ```
 ## Conclusion
 
