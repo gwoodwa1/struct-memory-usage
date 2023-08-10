@@ -7,7 +7,6 @@ import (
 	"unsafe"
 )
 
-
 func TestParseRouteTable(t *testing.T) {
 	// 1. Read the XML file from disk.
 	xmlFile, err := os.ReadFile("route_table.xml")
@@ -16,8 +15,8 @@ func TestParseRouteTable(t *testing.T) {
 	}
 
 	// 2. Parse the XML file into the specified struct.
-	var reply RpcReplyOptimized
-	err = xml.Unmarshal(xmlFile, &reply)
+	var replyWithCliPtr RpcReplyWithCliPointer
+	err = xml.Unmarshal(xmlFile, &replyWithCliPtr)
 	if err != nil {
 		t.Fatalf("Error parsing XML: %v", err)
 	}
@@ -25,8 +24,8 @@ func TestParseRouteTable(t *testing.T) {
 	// 3. Verify the parsed data matches the expected results.
 	// For the purpose of this example, let's check the Junos attribute as a basic test.
 	expectedJunosAttr := "http://xml.juniper.net/junos/18.1R3/junos" // This should be replaced with your expected value.
-	if reply.Junos != expectedJunosAttr {
-		t.Errorf("Expected Junos attribute to be %s, but got %s", expectedJunosAttr, reply.Junos)
+	if replyWithCliPtr.Junos != expectedJunosAttr {
+		t.Errorf("Expected Junos attribute to be %s, but got %s", expectedJunosAttr, replyWithCliPtr.Junos)
 	}
 }
 
@@ -35,34 +34,39 @@ func TestMemoryFootprintComparison(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading XML file: %v", err)
 	}
-
-	var replyOptimized RpcReplyOptimized
-	err = xml.Unmarshal(xmlFile, &replyOptimized)
+	var replyWithCliPtr RpcReplyWithCliPointer
+	err = xml.Unmarshal(xmlFile, &replyWithCliPtr)
 	if err != nil {
-		t.Fatalf("Error parsing XML into RpcReplyOptimized: %v", err)
+		t.Fatalf("Error parsing XML into RpcReply: %v", err)
+	}
+	var replyWithTablePtr RpcReplyWithTablePointer
+	err = xml.Unmarshal(xmlFile, &replyWithTablePtr)
+	if err != nil {
+		t.Fatalf("Error parsing XML into RpcReplyWithTablePointer: %v", err)
 	}
 
-	var reply RpcReply
-	err = xml.Unmarshal(xmlFile, &reply)
+	var originalReply RpcReply
+	err = xml.Unmarshal(xmlFile, &originalReply)
 	if err != nil {
 		t.Fatalf("Error parsing XML into RpcReply: %v", err)
 	}
 
-	// Compare the sizes of the two parsed structures
-	sizeOptimized := unsafe.Sizeof(replyOptimized)
-	sizeReply := unsafe.Sizeof(reply)
+	// Compare the sizes of the three parsed structures
+	sizeWithCliPtr := unsafe.Sizeof(replyWithCliPtr)
+	sizeWithTablePtr := unsafe.Sizeof(replyWithTablePtr)
+	sizeOriginalReply := unsafe.Sizeof(originalReply)
+        t.Logf("Size of RpcReplyWithCliPointer: %v bytes", sizeWithCliPtr)
+	t.Logf("Size of RpcReplyWithTablePointer: %v bytes", sizeWithTablePtr)
+	t.Logf("Size of RpcReply: %v bytes", sizeOriginalReply)
 
-	t.Logf("Size of RpcReplyOptimized: %v bytes", sizeOptimized)
-	t.Logf("Size of RpcReply: %v bytes", sizeReply)
-
-	// Example verification for RpcReplyOptimized
+	// Example verification for RpcReplyWithTablePointer
 	expectedJunosAttr := "http://xml.juniper.net/junos/18.1R3/junos"
-	if replyOptimized.Junos != expectedJunosAttr {
-		t.Errorf("Expected Junos attribute for RpcReplyOptimized to be %s, but got %s", expectedJunosAttr, replyOptimized.Junos)
+	if replyWithTablePtr.Junos != expectedJunosAttr {
+		t.Errorf("Expected Junos attribute for RpcReplyWithTablePointer to be %s, but got %s", expectedJunosAttr, replyWithTablePtr.Junos)
 	}
 
 	// Example verification for RpcReply
-	if reply.Junos != expectedJunosAttr {
-		t.Errorf("Expected Junos attribute for RpcReply to be %s, but got %s", expectedJunosAttr, reply.Junos)
+	if originalReply.Junos != expectedJunosAttr {
+		t.Errorf("Expected Junos attribute for RpcReply to be %s, but got %s", expectedJunosAttr, originalReply.Junos)
 	}
 }
